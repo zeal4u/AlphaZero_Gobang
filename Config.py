@@ -38,7 +38,7 @@ class Config:
         self.pure_mcts_playout_num = 1000
 
         # New Added Parameters
-        self.network = ResNet  # the type of network
+        self.network = FeedForwardNet# the type of network
         self.policy_param = None  # Network parameters
         self.loss_records = [] # loss records
         self.best_win_pure_so_far = 0.0 # win ratio against rollout mcts player

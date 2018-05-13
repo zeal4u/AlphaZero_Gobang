@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Base Player Class
 extract the Play Abstract Method for different player to override
-'''
+"""
+
+
 class Player(object):
     def __init__(self, player_no=0, player_name=""):
         self.player_no = player_no
@@ -21,7 +23,6 @@ class Player(object):
     # abstract
     def play(self, board):
         raise NotImplementedError
-
 
     def __str__(self):
         return "player"

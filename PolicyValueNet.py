@@ -16,6 +16,7 @@ def set_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
+
 # def adjust_learning_rate(optimizer, lr, epoch):
 #     """Sets the learning rate to the initial LR decayed by 10 after 150 and 225 epochs"""
 #     lr = lr * (0.1 ** (epoch // 150)) * (0.1 ** (epoch // 225))
@@ -24,7 +25,8 @@ def set_learning_rate(optimizer, lr):
 #         param_group['lr'] = lr
 
 class ConvBlock(nn.Module):
-    '''Convolutional Block'''
+    """Convolutional Block"""
+
     def __init__(self, in_channels=4, out_channels=256):
         super(ConvBlock, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1)
@@ -37,9 +39,11 @@ class ConvBlock(nn.Module):
         out = self.relu(out)
         return out
 
+
 class ResidualBlock(nn.Module):
-    '''Residual Block'''
-    def __init__(self, out_channels=128): # input_channels=output_channels
+    """Residual Block"""
+
+    def __init__(self, out_channels=128):  # input_channels=output_channels
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -55,25 +59,25 @@ class ResidualBlock(nn.Module):
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out += x # skip connection that adds the input to the block
+        out += x  # skip connection that adds the input to the block
         out = self.relu2(out)
         return out
 
 
-
 class ResNet(nn.Module):
     '''Full ResNet According to the paper'''
+
     def __init__(self, board_width, board_height, in_channels=4, out_channels=128):
         super(ResNet, self).__init__()
         self.board_width = board_width
         self.board_height = board_height
         # common layers
         self.conv_layer = ConvBlock(in_channels, out_channels)
-        self.res_layer = self.make_residual_layers(1, out_channels) # 论文里blocks=19 or 39
+        self.res_layer = self.make_residual_layers(1, out_channels)  # 论文里blocks=19 or 39
 
         # policy head: action policy layers
         self.act_filters = 2
-        self.act_conv1 = nn.Conv2d(out_channels, self.act_filters, kernel_size=1, stride=1) #2 filters
+        self.act_conv1 = nn.Conv2d(out_channels, self.act_filters, kernel_size=1, stride=1)  # 2 filters
         self.act_bn1 = nn.BatchNorm2d(self.act_filters)
         self.act_relu1 = nn.LeakyReLU()
         self.act_fc1 = nn.Linear(self.act_filters * board_width * board_height, board_width * board_height)
@@ -82,7 +86,7 @@ class ResNet(nn.Module):
         # value head: state value layers
         self.val_filters = 1
         self.val_hidden_num = 128
-        self.val_conv1 = nn.Conv2d(out_channels, self.val_filters , kernel_size=1)
+        self.val_conv1 = nn.Conv2d(out_channels, self.val_filters, kernel_size=1)
         self.val_bn1 = nn.BatchNorm2d(self.val_filters)
         self.val_relu1 = nn.LeakyReLU()
         self.val_fc1 = nn.Linear(self.val_filters * board_width * board_height, self.val_hidden_num)
@@ -90,13 +94,11 @@ class ResNet(nn.Module):
         self.val_fc2 = nn.Linear(self.val_hidden_num, 1)
         self.val_tanh = nn.Tanh()
 
-
     def make_residual_layers(self, blocks=2, out_channels=256):
         layers = []
         for i in range(blocks):
             layers.append(ResidualBlock(out_channels))
         return nn.Sequential(*layers)
-
 
     def forward(self, state):
         # common layer
@@ -106,7 +108,7 @@ class ResNet(nn.Module):
         x_act = self.act_conv1(x)
         x_act = self.act_bn1(x_act)
         x_act = self.act_relu1(x_act)
-        x_act = x_act.view(-1, self.act_filters * self.board_width * self.board_height)#flatten
+        x_act = x_act.view(-1, self.act_filters * self.board_width * self.board_height)  # flatten
         policy_logits = self.act_fc1(x_act)
         policy_output = self.act_softmax(policy_logits)
 
@@ -120,7 +122,6 @@ class ResNet(nn.Module):
         x_val = self.val_fc2(x_val)
         value_output = self.val_tanh(x_val)
         return policy_logits, policy_output, value_output
-
 
     def __str__(self):
         return "resnet"
@@ -155,7 +156,7 @@ class SimpleNet(nn.Module):
         x_act = F.relu(self.act_conv1(x))
         x_act = x_act.view(-1, 4 * self.board_width * self.board_height)
         policy_logits = self.act_fc1(x_act)
-        policy_output = F.softmax(policy_logits, dim=1) # log是因为用库可以避免输出概率为0等特殊情况。否则如果后续用torch.log处理，会出现loss=nan的情况
+        policy_output = F.softmax(policy_logits, dim=1)  # log是因为用库可以避免输出概率为0等特殊情况。否则如果后续用torch.log处理，会出现loss=nan的情况
 
         # state value layers
         x_val = F.relu(self.val_conv1(x))
@@ -179,7 +180,7 @@ class SimpleResNet(nn.Module):
         self.board_height = board_height
         # common layers
         self.conv1 = nn.Conv2d(4, 128, kernel_size=3, padding=1)
-        self.res1 = ResidualBlock(128) # add a res_block
+        self.res1 = ResidualBlock(128)  # add a res_block
         # action policy layers
         self.act_conv1 = nn.Conv2d(128, 4, kernel_size=1)
         self.act_fc1 = nn.Linear(4 * board_width * board_height, board_width * board_height)
@@ -206,14 +207,44 @@ class SimpleResNet(nn.Module):
         value_output = F.tanh(self.val_fc2(x_val))
         return policy_logits, policy_output, value_output
 
-
     def __str__(self):
         return "simple_resnet"
 
 
+class FeedForwardNet(nn.Module):
+
+    def __init__(self, board_width, board_height):
+        super(FeedForwardNet, self).__init__()
+        self.board_width = board_width
+        self.board_height = board_height
+
+        # common layers
+        self.fc1 = nn.Linear(4 * board_width * board_height, board_width * board_height)
+
+        # action policy layers
+        self.act_fc1 = nn.Linear(board_width * board_height, board_width * board_height)
+
+        # state value layers
+        self.val_fc1 = nn.Linear(board_width * board_height, 1)
+
+    def forward(self, state_input):
+        # common layers
+        x = F.relu(self.fc1(state_input.view(-1, 4 * self.board_width * self.board_height)))
+
+        # action policy layers
+        policy_logits = F.relu(self.act_fc1(x))
+        policy_output = F.softmax(policy_logits, dim=1)  # log是因为用库可以避免输出概率为0等特殊情况。否则如果后续用torch.log处理，会出现loss=nan的情况
+
+        # state value layers
+        value_output = F.tanh(self.val_fc1(x))
+
+        return policy_logits, policy_output, value_output
+
 
 """policy-value network wrapper """
-class PolicyValueNet():
+
+
+class PolicyValueNet:
 
     def __init__(self, board_width, board_height, net_params=None, Network=None, use_gpu=False):
         if Network is None: Network = SimpleNet
@@ -231,7 +262,6 @@ class PolicyValueNet():
         if net_params:
             self.policy_value_net.load_state_dict(net_params)
 
-
     def predict_many(self, state_batch):
         """
         input: a batch of states
@@ -246,7 +276,6 @@ class PolicyValueNet():
             _, policy_output, value_output = self.policy_value_net(state_batch)
             return policy_output.data.numpy(), value_output.data.numpy()
 
-
     def predict(self, board):
         """
         input: board：a single sample
@@ -256,7 +285,8 @@ class PolicyValueNet():
         # (batch, channels, width, height)
         current_state = np.array(board.current_state().reshape(-1, 4, self.board_width, self.board_height))
         if self.use_gpu:
-            _, policy_output, value_output = self.policy_value_net(Variable(torch.from_numpy(current_state)).cuda().float())
+            _, policy_output, value_output = self.policy_value_net(
+                Variable(torch.from_numpy(current_state)).cuda().float())
             act_probs = policy_output.data.cpu().numpy().flatten()
         else:
             # probs:(batch_size, width*height); value:(batch_size, 1)
@@ -284,28 +314,26 @@ class PolicyValueNet():
         set_learning_rate(self.optimizer, lr)
 
         # forward
-        policy_logits,_, value_output = self.policy_value_net(state_batch)
+        policy_logits, _, value_output = self.policy_value_net(state_batch)
         # define the loss = (z - v)^2 - pi^T * log(p) + c||theta||^2 (Note: the L2 penalty is incorporated in optimizer)
         value_loss = F.mse_loss(value_output.view(-1), winner_batch)
-        policy_loss = -torch.mean(torch.sum(mcts_probs * F.log_softmax(policy_logits,dim=1), 1))
+        policy_loss = -torch.mean(torch.sum(mcts_probs * F.log_softmax(policy_logits, dim=1), 1))
 
         loss = value_loss + policy_loss
         # backward and optimize
         loss.backward()
         self.optimizer.step()
         # calc policy entropy, for monitoring only，- sum (p*logp)
-        log_policy_output = F.log_softmax(policy_logits, dim=1) # 为了防止手动处理log时p负数问题，故先调用库函数
+        log_policy_output = F.log_softmax(policy_logits, dim=1)  # 为了防止手动处理log时p负数问题，故先调用库函数
         entropy = -torch.mean(torch.sum(torch.exp(log_policy_output) * log_policy_output, 1))
 
         # entropy is equivalent to policy loss.
         return {
-            'combined_loss':loss.data[0],
+            'combined_loss': loss.data[0],
             'policy_loss': policy_loss.data[0],
-            'value_loss':value_loss.data[0],
+            'value_loss': value_loss.data[0],
             'entropy': entropy.data[0]
         }
-
-
 
     def get_policy_param(self):
         net_params = self.policy_value_net.state_dict()
