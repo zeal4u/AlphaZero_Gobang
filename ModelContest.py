@@ -51,8 +51,9 @@ def contest(directory_name, n_games=20):
     board = Board(width=board_width, height=board_height, n_in_row=n_in_row)
     game = Game(board)
     player1, player2 = None, None
+    round = 0
     while len(cur_players) >= 2:
-        next_turn_players = []
+        next_round_players = []
         for player in cur_players:
             if player1 is None:
                 player1 = player
@@ -64,21 +65,22 @@ def contest(directory_name, n_games=20):
                     winner = game.start_game(player1, player2, who_first=i % 2, is_shown=0)
                     win_cnt[winner] += 1
                 win_ratio = 1.0 * (win_cnt[1] + 0.5 * win_cnt[-1]) / n_games
-                info = player1.filename + " vs " + player2.filename + " : win %d lose %d tie %d" % (
-                    win_cnt[1], win_cnt[2], win_cnt[-1])
+                info = player1.filename + " vs " + player2.filename + " : win %d lose %d tie %d round %d" % (
+                    win_cnt[1], win_cnt[2], win_cnt[-1], round)
                 logger.info(info)
                 if win_ratio > 0.5:
-                    next_turn_players.append(player1)
+                    next_round_players.append(player1)
                 elif win_ratio == 0.5:
-                    next_turn_players.append(player1)
-                    next_turn_players.append(player2)
+                    next_round_players.append(player1)
+                    next_round_players.append(player2)
                 else:
-                    next_turn_players.append(player2)
+                    next_round_players.append(player2)
                 player1, player2 = None, None
         else:
             if player1:
-                next_turn_players.append(player1)
-        cur_players = next_turn_players
+                next_round_players.append(player1)
+        cur_players = next_round_players
+        round += 1
     logger.info(cur_players[0].filename +" is final winner!")
     return cur_players[0].filename
 
