@@ -12,7 +12,7 @@ from Util import load_current_best_player
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Log等级总开关
 rq = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
-log_name = './logs/' + rq + '.log'
+log_name = './logs/' + 'contest-' +rq + '.log'
 logfile = log_name
 
 fh = logging.FileHandler(logfile, mode='w')
@@ -89,4 +89,4 @@ if __name__ == "__main__":
     parser.add_argument('--n', default=20, type=int,
                         help='number of games for each contest')
     args = parser.parse_args()
-    print(contest(args.dir, args.n))
+    contest(args.dir, args.n)
