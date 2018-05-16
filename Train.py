@@ -21,7 +21,7 @@ from Util import *
 root_data_file = "data/"
 
 
-class TrainPipeline():
+class TrainPipeline:
     def __init__(self, config=None):
         # params of the board and the game
         self.config = config if config else Config()
@@ -74,10 +74,10 @@ class TrainPipeline():
         return loss_info
 
     def adjust_learning_rate(self, old_probs, old_v, state_batch, winner_batch):
-        '''
+        """
         reference paper: PPO:Proximal Policy Optimization
         adjust learning rate based on KL
-        '''
+        """
         new_probs, new_v = self.policy_value_net.predict_many(state_batch)
         kl = np.mean(np.sum(old_probs * (np.log(old_probs + 1e-10) - np.log(new_probs + 1e-10)), axis=1))  # KL
         if kl > self.config.kl_targ * 2 and self.config.lr_multiplier > 0.1:  # kl increase, denote that the new move prob distribution deviate a lot from original distribution, that's what we don't expect. maybe dute to too large lr
@@ -92,7 +92,7 @@ class TrainPipeline():
             kl, self.config.learn_rate * self.config.lr_multiplier, explained_var_old, explained_var_new))
 
     def adjust_learning_rate_2(self, iteration):
-        '''衰减法'''
+        """衰减法"""
         if (iteration + 1) % self.config.lr_decay_per_iterations == 0:
             self.config.lr_multiplier /= self.config.lr_decay_speed
         print("lr:{}".format(self.config.learn_rate * self.config.lr_multiplier))
