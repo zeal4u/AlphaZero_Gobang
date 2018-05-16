@@ -79,6 +79,7 @@ def contest(directory_name, n_games=20):
         else:
             if player1:
                 next_round_players.append(player1)
+                player1 = None
         cur_players = next_round_players
         round += 1
     logger.info(cur_players[0].filename +" is final winner!")

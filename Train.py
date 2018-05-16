@@ -168,8 +168,8 @@ class TrainPipeline:
             # load network parameters
             self.config.policy_param = self.policy_value_net.get_policy_param()  # get model params
 
-            self.config.cur_best_alphazero_store_filename = "../drive/{}_{}_{}_data/epochs-{0}-opponent-{1}-win-{" \
-                                                            "2:.2f}.pkl" \
+            self.config.cur_best_alphazero_store_filename = "../drive/{0}_{1}_{2}_data/epochs-{3}-opponent-{4}-win-{" \
+                                                            "5:.2f}.pkl" \
                 .format(self.config.board_width,
                         self.config.board_height,
                         self.config.n_in_row,
