@@ -7,7 +7,7 @@ import logging
 
 from Board import Board
 from Game import Game
-from Util import load_current_best_player
+from Util import load_current_best_player, load_config
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Log等级总开关
@@ -45,9 +45,10 @@ def contest(directory_name, n_games=20):
             player.filename = filename
             cur_players.append(player)
 
-    board_width = 6
-    board_height = 6
-    n_in_row = 4
+    config = load_config(os.path.join(directory_name, filenames[0]))
+    board_width = config.board_width
+    board_height = config.board_height
+    n_in_row = config.n_in_row
     board = Board(width=board_width, height=board_height, n_in_row=n_in_row)
     game = Game(board)
     player1, player2 = None, None
