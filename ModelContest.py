@@ -12,7 +12,7 @@ from Util import load_current_best_player
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Log等级总开关
 rq = time.strftime('%Y%m%d%H%M', time.localtime(time.time()))
-log_name = './logs/' + 'contest-' +rq + '.log'
+log_name = '../drive/' + 'contest-' +rq + '.log'
 logfile = log_name
 
 fh = logging.FileHandler(logfile, mode='w')
