@@ -89,7 +89,7 @@ class Game(object):
         states, mcts_probs, current_players = [], [], []
         if is_shown:
             self.set_player_symbol(who_first=0)
-        while (True):
+        while True:
             move, move_probs = player.play(self.board, temp=temp, return_prob=True)
             # store the data
             states.append(self.board.current_state())
